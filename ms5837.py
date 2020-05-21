@@ -222,7 +222,7 @@ class MS5837():
         self._first_order_calculation()
         self._second_order_calculation()
 		self._absolute_pressure = self.p2
-        p2 = self.p2 - sea_level_pressure #Remove atmosphere influence.
+		p2 = self.p2 - sea_level_pressure #Remove atmosphere influence.
         if units in ['millibar','mbar','hectopascals','hPa']:
             pressure = p2
         elif units in ['decibar','dbar']:
@@ -343,10 +343,16 @@ class MS5837():
                 
         #Take a pressure reading. Don't subtract standard sea_level_pressure.
         self.pressure()  
-    	  p = self._absolute_pressure
+		p = self._absolute_pressure
         
         h =  (1-pow((p/sea_level_pressure),0.190284))*145366.45*.3048          
         
+		
+		if h < 0:
+			h = 0.00
+			print('If you are in the ocean, try the depth function.')
+			print('Or try setting sea_level_pressure to what your sensor reads.')
+		
         if units in ['meters','m']:
             altitude = h
         elif units in ['feet','ft']:
