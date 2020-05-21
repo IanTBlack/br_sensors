@@ -361,5 +361,10 @@ class MS5837():
         altitude = round(altitude,2)
         return altitude
         
+
+    def zero_ocean_pressure(self,resolution = 8192):
+        self.pressure()
+        atmp = self._absolute_pressure()
+        return atmp
         
         
