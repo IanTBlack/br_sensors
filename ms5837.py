@@ -209,49 +209,82 @@ class MS5837():
         return temperature
 
     
-    def pressure(self, units='dbar',atmospheric_pressure=1013.25,
-                 resolution=8192):
+    def absolute_pressure(self,units = 'millibar',resolution=8192):
         
-        """Compute temperature compensated pressure.
+        """Compute second order pressure as absolute pressure.
         p2 is the second order temperature compensated pressure in millibars.
-        units -- units the user wants pressure in
-        atmospheric_pressure -- reference atmosphere (standard is 1013.25mbar)
+        units -- units that the user wants
         resolution -- the resolution option of the sensor.
         """
+        
         self._get_data(resolution = resolution)
         self._first_order_calculation()
         self._second_order_calculation()
-        self._absolute_pressure = self.p2
-        p2 = self.p2 - atmospheric_pressure #Remove atmosphere influence.
+        self.abs_p = self.p2        
         if units in ['millibar','mbar','hectopascals','hPa']:
-            pressure = p2
+            pressure = self.p2 
         elif units in ['decibar','dbar']:
-            pressure = p2 / 100
+            pressure = self.p2  / 100
         elif units in ['bar']:
-            pressure = p2 /1000
+            pressure = self.p2  /1000
         elif units in ['pascal','Pa']:
-            pressure = p2 * 100
+            pressure = self.p2  * 100
         elif units in ['kilopascals','kPa']:
-            pressure = p2 / 10
+            pressure = self.p2  / 10
         elif units in ['atmospheres','atm']:
-            pressure = p2 * 0.000986923
+            pressure = self.p2  * 0.000986923
         elif units in ['psi']:
-            pressure = p2 * 0.014503773773022
+            pressure = self.p2  * 0.014503773773022
         elif units in ['Torr','mmHg']:
-            pressure = p2 * 0.750062
+            pressure = self.p2  * 0.750062
+        else:
+            print('Units not valid. Defaulting to millibar.')
+            pressure = self.p2 
+        pressure = round(pressure,2)        
+        return pressure
+    
+
+    def pressure(self, units='dbar',sea_level_pressure=1013.25,
+                 resolution=8192):
+        
+        """Remove atmospheric pressure influence. 
+        units -- units the user wants
+        sea_level_pressure -- pressure exerted by atmosphere.
+        resolution -- the resolution option of the sensor.
+        """
+        
+        self.absolute_pressure() #Get the absolute pressure reading.
+        p = self.abs_p - sea_level_pressure
+        
+        if units in ['millibar','mbar','hectopascals','hPa']:
+            pressure = p
+        elif units in ['decibar','dbar']:
+            pressure = p / 100
+        elif units in ['bar']:
+            pressure = p /1000
+        elif units in ['pascal','Pa']:
+            pressure = p * 100
+        elif units in ['kilopascals','kPa']:
+            pressure = p / 10
+        elif units in ['atmospheres','atm']:
+            pressure = p * 0.000986923
+        elif units in ['psi']:
+            pressure = p * 0.014503773773022
+        elif units in ['Torr','mmHg']:
+            pressure = p * 0.750062
         else:
             print('Units not valid. Defaulting to decibar.')
-            pressure = p2 / 100
+            pressure = p / 100
         pressure = round(pressure,2)
         return pressure
 
  
-    def depth(self,units='m',atmospheric_pressure=1013.25, resolution=8192, 
+    def depth(self,units='m',sea_level_pressure=1013.25, resolution=8192, 
               lat=45.00000, geo_strf_dyn_height=0, sea_surface_geopotential=0):
         
         """Compute depth using TEOS-10 and return depth in selected units.
-        
         units -- units the user wants depth in
+        sea_level_pressure -- pressure of atmosphere at sea level.
         resolution -- the resolution option of the sensor. 
         lat -- latitude of deployment, used in gsw_z_from_p (decimal degrees)
         geo_strf_dyn_height -- dynamic height anomaly  (m^2/s^2)
@@ -259,12 +292,16 @@ class MS5837():
         """
         
         p = self.pressure(units = 'dbar',
-                          atmospheric_pressure = atmospheric_pressure,
+                          sea_level_pressure = sea_level_pressure,
                           resolution = resolution)
         z = self._gsw_z_from_p(p,lat,
                               geo_strf_dyn_height,sea_surface_geopotential)
         
         depth = self._gsw_depth_from_z(z)         
+        
+        if depth < 0:
+            depth = 0.00
+        
         if units in ['meters','m']:
             depth = depth
         elif units in ['feet','ft']:
@@ -283,8 +320,7 @@ class MS5837():
                      sea_surface_geopotential=0):
         
         """Compute height using pressure.
-        z = 0 is sea level.
-        -z is going DOWN into the ocean.        
+        z = 0 is sea level. -z is going DOWN into the ocean.        
         p -- pressure in decibars
         lat -- latitude of deployment, used in gsw_z_from_p (decimal degrees)
         geo_strf_dyn_height -- dynamic height anomaly  (m^2/s^2)
@@ -306,9 +342,9 @@ class MS5837():
      
     def _gsw_enthalpy_sso_0(self,p):
         
-        """Compute enthalpy at Standard Ocean Salinity (SSO).
+        """Compute enthalpy at Standard Ocean Salinity (SSO).  
         Assumes a Conservative Temperature of zero degrees Celsius.
-        p -- pressure in decibars.
+        p -- pressure in decibars
         """
         
         z = p*1e-4
@@ -334,20 +370,23 @@ class MS5837():
         return depth
     
     
-    def altitude(self,units='m', atmospheric_pressure=1013.25,
+    def altitude(self,units='m', sea_level_pressure=1013.25,
                  resolution=8192):
         
-        """Compute altitude using hypsometric formula.
-        units -- units of return
-        atmospheric_pressure -- reference pressure (standard is 1013.25 mbar)
-        resolution -- resolution of the sensor
-        """
-                
-        #Take a pressure reading. Don't subtract standard sea_level_pressure.
-        self.pressure()  
-        p = self._absolute_pressure
+        """Compute altitude from atmospheric pressure.
+        Pulled from original Blue Robotics MS5837 Python class.
         
-        h =  (1-pow((p/atmospheric_pressure),0.190284))*145366.45*.3048          
+        units -- units the user wants depth in
+        sea_level_pressure -- pressure of atmosphere at sea level.
+        resolution -- the resolution option of the sensor.         
+        
+        Future addition? Use metpy computation.
+        """
+        
+        self.absolute_pressure()
+        p = self.abs_p
+        
+        h =  (1-pow((p/sea_level_pressure),0.190284))*145366.45*.3048          
         if h < 0:
             h = 0.00
             print('If you are in the ocean, try the depth function.')
@@ -364,9 +403,6 @@ class MS5837():
         return altitude
         
 
-    def absolute_pressure(self,resolution=8192):
-        self.pressure() #Perform pressure computation.
-        abs_p = self._absolute_pressure
-        return abs_p
+
         
         
