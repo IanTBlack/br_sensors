@@ -256,6 +256,9 @@ class MS5837():
         self.absolute_pressure() #Get the absolute pressure reading.
         p = self.abs_p - sea_level_pressure
         
+        if p < 0:
+            p = 0.00
+        
         if units in ['millibar','mbar','hectopascals','hPa']:
             pressure = p
         elif units in ['decibar','dbar']:
