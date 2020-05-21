@@ -5,6 +5,8 @@
 #Description
     A class for operating the TSYS01 over I2C on a Raspberry Pi.
     
+    Temperature is calculated per the TE TSYS01 manual.
+    https://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=Data+Sheet%7FTSYS01%7FA%7Fpdf%7FEnglish%7FENG_DS_TSYS01_A.pdf%7FG-NICO-018
     
 #Pinouts for Blue Robotics TSYS01 Series
     TSYS01 - RPi
@@ -12,7 +14,6 @@
     Black - GND
     Green - SCL
     White - SDA
-    
     
 #Example
     tsys01 = TSYS01()  #Set up class for a MS5837-30BA sensor.
