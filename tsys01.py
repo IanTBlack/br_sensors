@@ -128,8 +128,6 @@ class TSYS01():
     
     #-----EXPERIMENTAL-----#       
     def burst_avg_temperature(self,number_samples = 10,units = 'degC'):
-        
-       
         #Restrict number_samples to reduce influence of self heating.
         if number_samples >= 11:
             number_samples = 10 
