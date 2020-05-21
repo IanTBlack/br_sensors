@@ -221,6 +221,7 @@ class MS5837():
         self._get_data(resolution = resolution)
         self._first_order_calculation()
         self._second_order_calculation()
+		self._absolute_pressure = self.p2
         p2 = self.p2 - sea_level_pressure #Remove atmosphere influence.
         if units in ['millibar','mbar','hectopascals','hPa']:
             pressure = p2
@@ -339,13 +340,13 @@ class MS5837():
         sea_level_pressure -- reference pressure (standard is 1013.25 mbar)
         resolution -- resolution of the sensor
         """
-        
-        t = self.temperature('degC',resolution)   
-        
+                
         #Take a pressure reading. Don't subtract standard sea_level_pressure.
-        p = self.pressure('hPa',0,resolution)   
+        self.pressure()  
+    	  p = self._absolute_pressure
         
-        h = ((pow((sea_level_pressure/p),(1/5.257))-1) * (t + 273.15))/0.0065
+        h =  (1-pow((p/sea_level_pressure),0.190284))*145366.45*.3048          
+        
         if units in ['meters','m']:
             altitude = h
         elif units in ['feet','ft']:
