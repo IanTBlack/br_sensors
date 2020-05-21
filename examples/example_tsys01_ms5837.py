@@ -32,6 +32,7 @@ def main():
     t.initialize_sensor()  
     p.initialize_sensor()
     
+    atmo_pressure = p.absolute_pressure()
   
     df = pd.DataFrame() #Holder for data.
     for i in range(10):  #Collect data ~ once per second for 10 seconds.
@@ -51,5 +52,5 @@ def main():
     
     
     
-if "__name__" == "__main__":
+if __name__ == "__main__":
     main()
