@@ -104,6 +104,7 @@ class TSYS01():
         else:
             print('Units not valid. Defaulting to Celsius.')
             temperature = self._t
+        self._temperature_float = temperature #Assigned for use in b_a_t.
         temperature = round(temperature,2)    
         return temperature
     
@@ -135,10 +136,10 @@ class TSYS01():
             number_samples = number_samples
         t_array = []
         for i in range(number_samples):
-            t = self.temperature(units=units)
+            self.temperature(units=units)
+            t = self._temperature_float
             t_array.append(t)
         t_array = t_array[1:len(t_array)-1] #Drop the first and last values.
         burst_avg = sum(t_array)/len(t_array) #Average the remaining.
         burst_avg = round(burst_avg,2)
         return burst_avg
-        
