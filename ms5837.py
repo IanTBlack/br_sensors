@@ -6,6 +6,13 @@
     A class for operating the MS5837-02BA and MS5837-30BA over I2C
     on a Raspberry Pi.
     
+    Pressure and temperature are calculated per the TE MS5837 manual.
+    30BA = https://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=Data+Sheet%7FMS5837-30BA%7FB1%7Fpdf%7FEnglish%7FENG_DS_MS5837-30BA_B1.pdf%7FCAT-BLPS0017
+    02BA = https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=MS5837-02BA01&DocType=DS&DocLang=English
+    
+    Depth calculation utilizes TEOS-10 gsw_z_from_p.
+    
+    Altitude utilizes the hypsometric equation.
     
 #Pinouts for Blue Robotics MS5837 Series
     MS5837 - RPi
@@ -13,7 +20,6 @@
     Black - GND
     Green - SCL
     White - SDA
-    
     
 #Example
     ms5837 = MS5837('30BA')  #Set up class for a MS5837-30BA sensor.
@@ -203,18 +209,19 @@ class MS5837():
         return temperature
 
     
-    def pressure(self, units = 'dbar',atmosphere = 1013.25, resolution = 8192):
+    def pressure(self, units = 'dbar',sea_level_pressure = 1013.25,
+                 resolution = 8192):
         
         """Compute temperature compensated pressure.
         p2 is the second order temperature compensated pressure in millibars.
         units -- units the user wants pressure in
-        atmosphere -- reference atmosphere (standard is 1013.25mbar)
+        sea_level_pressure -- reference atmosphere (standard is 1013.25mbar)
         resolution -- the resolution option of the sensor.
         """
         self._get_data(resolution = resolution)
         self._first_order_calculation()
         self._second_order_calculation()
-        p2 = self.p2 - atmosphere #Remove atmosphere influence.
+        p2 = self.p2 - sea_level_pressure #Remove atmosphere influence.
         if units in ['millibar','mbar','hectopascals','hPa']:
             pressure = p2
         elif units in ['decibar','dbar']:
@@ -322,3 +329,32 @@ class MS5837():
         
         depth = -z
         return depth
+    
+    
+    def altitude(self,units = 'm',sea_level_pressure = 1013.25,
+                 resolution = 8192):
+        
+        """Compute altitude using hypsometric formula.
+        units -- units of return
+        sea_level_pressure -- reference pressure (standard is 1013.25 mbar)
+        resolution -- resolution of the sensor
+        """
+        
+        t = self.temperature('degC',resolution)   
+        
+        #Take a pressure reading. Don't subtract standard sea_level_pressure.
+        p = self.pressure('hPa',0,resolution)   
+        
+        h = ((pow((sea_level_pressure/p),(1/5.257))-1) * (t + 273.15))/0.0065
+        if units in ['meters','m']:
+            altitude = h
+        elif units in ['feet','ft']:
+            altitude = h * 3.28084
+        else:
+            print('Units not valid. Defaulting to meters.')
+            altitude = h 
+        altitude = round(altitude,2)
+        return altitude
+        
+        
+        
