@@ -13,14 +13,15 @@ import ms5837
 
 def main():    
     
-    standard_atmosphere = 1013.25 
-    
     #Set up pressure object.
     p = ms5837.MS5837()
 
     #Initialize the pressure sensor.
     p.initialize_sensor()
 
+    #Take an atmospheric pressure sample before going into the water.
+    atmo_pressure = p.absolute_pressure()
+    
     #Request temperature from the sensor.
     #Units options: Celsius,degC,C
     #         Fahrenheight,degF,F
@@ -39,7 +40,7 @@ def main():
     #         atmospheres,atm
     #         psi
     #         Torr, mmHg
-    pressure = p.pressure('millibar',standard_atmosphere)
+    pressure = p.pressure('dbar',atmo_pressure)
     print(pressure)
     
     
@@ -50,14 +51,14 @@ def main():
     #         feet,ft
     #         fathoms,ftm
     #Latitude is used in this calculation. By default it is 45.00000 deg N.
-    depth = p.depth(units = 'm' , lat = 45.00000)
+    depth = p.depth(units = 'm' , atmospheric_pressure = atmo_pressure, lat = 45.00000)
     print(depth)
     
     
     #Request altitude.
     #Units options: meters, m
     #               feet, ft
-    altitude = p.altitude(units = 'm',sea_level_pressure = standard_atmosphere)
+    altitude = p.altitude(units = 'm',atmospheric_pressure = atmo_pressure)
     print(altitude)
     
     #Reset the sensor. Not necessary, but helps if there is a PROM error.

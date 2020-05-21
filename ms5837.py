@@ -185,7 +185,7 @@ class MS5837():
         self.temp2 = (self._temp - ti)/100 #2nd order.
     
     
-    def temperature(self,units = 'Celsius',resolution = 8192):
+    def temperature(self,units='Celsius',resolution=8192):
         
         """Compute second order temperature.
         temp2 is the second order temperature.
@@ -209,20 +209,20 @@ class MS5837():
         return temperature
 
     
-    def pressure(self, units = 'dbar',sea_level_pressure = 1013.25,
-                 resolution = 8192):
+    def pressure(self, units='dbar',atmospheric_pressure=1013.25,
+                 resolution=8192):
         
         """Compute temperature compensated pressure.
         p2 is the second order temperature compensated pressure in millibars.
         units -- units the user wants pressure in
-        sea_level_pressure -- reference atmosphere (standard is 1013.25mbar)
+        atmospheric_pressure -- reference atmosphere (standard is 1013.25mbar)
         resolution -- the resolution option of the sensor.
         """
         self._get_data(resolution = resolution)
         self._first_order_calculation()
         self._second_order_calculation()
         self._absolute_pressure = self.p2
-        p2 = self.p2 - sea_level_pressure #Remove atmosphere influence.
+        p2 = self.p2 - atmospheric_pressure #Remove atmosphere influence.
         if units in ['millibar','mbar','hectopascals','hPa']:
             pressure = p2
         elif units in ['decibar','dbar']:
@@ -246,8 +246,8 @@ class MS5837():
         return pressure
 
  
-    def depth(self,units='m', resolution=8192, lat=45.00000,
-              geo_strf_dyn_height=0, sea_surface_geopotential=0):
+    def depth(self,units='m',atmospheric_pressure=1013.25, resolution=8192, 
+              lat=45.00000, geo_strf_dyn_height=0, sea_surface_geopotential=0):
         
         """Compute depth using TEOS-10 and return depth in selected units.
         
@@ -258,7 +258,9 @@ class MS5837():
         sea_surface_geopotential -- geopotential at zero sea pressure (m^2/s^2)
         """
         
-        p = self.pressure(units = 'dbar', resolution = resolution)
+        p = self.pressure(units = 'dbar',
+                          atmospheric_pressure = atmospheric_pressure,
+                          resolution = resolution)
         z = self._gsw_z_from_p(p,lat,
                               geo_strf_dyn_height,sea_surface_geopotential)
         
@@ -332,12 +334,12 @@ class MS5837():
         return depth
     
     
-    def altitude(self,units = 'm',sea_level_pressure = 1013.25,
-                 resolution = 8192):
+    def altitude(self,units='m', atmospheric_pressure=1013.25,
+                 resolution=8192):
         
         """Compute altitude using hypsometric formula.
         units -- units of return
-        sea_level_pressure -- reference pressure (standard is 1013.25 mbar)
+        atmospheric_pressure -- reference pressure (standard is 1013.25 mbar)
         resolution -- resolution of the sensor
         """
                 
@@ -345,7 +347,7 @@ class MS5837():
         self.pressure()  
         p = self._absolute_pressure
         
-        h =  (1-pow((p/sea_level_pressure),0.190284))*145366.45*.3048          
+        h =  (1-pow((p/atmospheric_pressure),0.190284))*145366.45*.3048          
         if h < 0:
             h = 0.00
             print('If you are in the ocean, try the depth function.')
@@ -362,9 +364,9 @@ class MS5837():
         return altitude
         
 
-    def zero_ocean_pressure(self,resolution = 8192):
-        self.pressure()
-        atmp = self._absolute_pressure()
-        return atmp
+    def absolute_pressure(self,resolution=8192):
+        self.pressure() #Perform pressure computation.
+        abs_p = self._absolute_pressure
+        return abs_p
         
         
