@@ -32,12 +32,13 @@ def main():
     t.initialize_sensor()  
     p.initialize_sensor()
     
+    #If taking an initial air sample, the reference pressure must be in mbar.
     atmo_pressure = p.absolute_pressure()
   
     df = pd.DataFrame() #Holder for data.
     for i in range(10):  #Collect data ~ once per second for 10 seconds.
         temperature = t.temperature('degC') #Get the temp from the TSYS01.
-        depth = p.depth('meters')  #Get the depth from the MS5837.
+        depth = p.depth('meters',atmo_pressure)  #Get the depth from the MS5837.
         now = pd.to_datetime(datetime.datetime.utcnow()) #Get the time in UTC.
         data = {'datetime':[now],'temperature':[temperature],'depth':[depth]}
         d = pd.DataFrame(data = data)  #Throw the data into a dataframe.
