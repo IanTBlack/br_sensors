@@ -1,6 +1,10 @@
+br_sensors is charityware.
+You can use and copy it as much as you like, but you are encouraged to make a 
+donation to the American Civil Liberties Union (www.aclu.org) if you find it useful.
+
 MIT License
 
-Copyright (c) 2017 Blue Robotics
+Copyright (c) 2020 Ian Black
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +28,7 @@ SOFTWARE.
 
 MIT License
 
-Copyright (c) 2020 Ian Black
+Copyright (c) 2017 Blue Robotics
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -43,3 +47,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
