@@ -1,8 +1,9 @@
-br_sensors is charityware.
+# br_sensors is charityware
 You can use and copy it as much as you like, but you are encouraged to make a 
 donation to the American Civil Liberties Union (www.aclu.org) if you find it useful.
 
-MIT License
+
+## MIT License
 
 Copyright (c) 2020 Ian Black
 
